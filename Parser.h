@@ -11,6 +11,7 @@
 
 #include "http.h"
 
-int CanMakeMoney(char *);
+int ParsePrices(char * link, double profitPercent);
+char * ParseItemNames(char * link, char delimiter);
 
 #endif /* defined(____Parser__) */

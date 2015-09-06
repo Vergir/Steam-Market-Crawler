@@ -11,7 +11,9 @@
 #include "Parser.h"
 #include <time.h>
 
-int CanMakeMoney(char * link)
+enum Games { dota2 = 570, tf2 = 440, csgo = 730 };
+
+int ParsePrices(char * link, double profitPercent)
 {
     const char * string = GetRequest(link);
     int startindex = 850;
@@ -32,26 +34,32 @@ int CanMakeMoney(char * link)
     }
     lowest = atof(buffer);
     median = atof(&(buffer[strlen(buffer)+1]));
-    if ((lowest / median) < MAKE_MONEY_PERCENT)
+    if ((lowest / median) < profitPercent)
         return 1;
     return 0;
 }
 
-int main(int argc, char * argv[])
+char * ParseItemNames(char * link, char delimiter)
 {
-    clock_t start, end;
-    double cpu_time_used;
+    short head;
+    char * items = calloc(2049, sizeof(char));
+    char * string = strstr(strstr(strstr(GetRequest(link), ";\\\">") + 1, ";\\\">") + 1, ";\\\">") + 1;
+    int offset = 0;
     
-    start = clock();
-    int response = CanMakeMoney("http://steamcommunity.com/market/priceoverview/?currency=0&appid=730&market_hash_name=StatTrak%E2%84%A2%20P250%20%7C%20Steel%20Disruption%20%28Factory%20New%29");
-    end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    if (response)
-        printf("yes\n");
-    else
-        printf("no\n");
-    printf("%f s", cpu_time_used);
+    for (short int i = 0; i != 20; i += 1)
+    {
+        head = 0;
+        string = strstr(string, ";\\\">") + 4;
+        while (string[++head] != '<');
+        memcpy(items+offset, string, head);
+        items[offset+head++] = delimiter;
+        offset+= head;
+    }
+    items[offset] = '\0';
     
-    return 1;
+    return items;
 }
 
+char * ParseItemMarket(char * link, enum Games game, char delimiter)
+{
+}

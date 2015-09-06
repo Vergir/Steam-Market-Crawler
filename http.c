@@ -6,7 +6,7 @@
 //
 //
 
-#define BUFFER 1024
+#define BUFFER 400000
 
 #include "http.h"
 
@@ -47,11 +47,10 @@ char * GetRequest(char* link)
     int received;
     long int bytes;
     char sendBuffer[BUFFER];
-    char recvBuffer[BUFFER];
+    char * recvBuffer = calloc(BUFFER, sizeof(char));
     struct sockaddr_in serv_addr;
     struct hostent * he;
     
-    memset(recvBuffer, '0' ,sizeof(recvBuffer));
     memset(&serv_addr, '0', sizeof(serv_addr));
     memset(&serv_addr, 0, sizeof(serv_addr));
     
@@ -72,7 +71,8 @@ char * GetRequest(char* link)
     serv_addr.sin_port = htons(80);
     memcpy(&serv_addr.sin_addr.s_addr, he->h_addr, he->h_length);
     
-    if (connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
+    int connectionStatus;
+    if ((connectionStatus = connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < 0)
     {
         perror("\n Error: Connect Failed\n");
         exit(1);
@@ -96,23 +96,22 @@ char * GetRequest(char* link)
     }
     while (sent < total);
     
-    total = sizeof(recvBuffer)-1;
+    total = BUFFER-1;
     received = 0;
     do
     {
         bytes = read(sockfd,recvBuffer+received,total-received);
         if (bytes < 0)
             perror("ERROR reading response from socket");
-        if (bytes == 0 || bytes < (total - received))
+        received += bytes;
+        if (recvBuffer[received-1] == '}')
             break;
-        received+=bytes;
+        
+        printf("%s",recvBuffer-10);
     }
     while (received < total);
     
     close(sockfd);
     
-    char * result = malloc(sizeof(recvBuffer));
-    memcpy(result, recvBuffer, sizeof(recvBuffer));
-    
-    return result;
+    return recvBuffer;
 }

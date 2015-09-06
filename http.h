@@ -8,6 +8,7 @@
 
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <fcntl.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <stdio.h>
@@ -17,6 +18,7 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+
 
 #ifndef ____http__
 #define ____http__

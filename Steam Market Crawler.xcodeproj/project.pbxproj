@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		7034E3761B9C432300077958 /* http.c in Sources */ = {isa = PBXBuildFile; fileRef = 7034E3721B9C432300077958 /* http.c */; };
 		7034E3771B9C432300077958 /* Parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 7034E3741B9C432300077958 /* Parser.c */; };
+		7034E3791B9C45EF00077958 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 7034E3781B9C45EF00077958 /* main.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -29,6 +30,7 @@
 		7034E3731B9C432300077958 /* http.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = http.h; sourceTree = SOURCE_ROOT; };
 		7034E3741B9C432300077958 /* Parser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Parser.c; sourceTree = SOURCE_ROOT; };
 		7034E3751B9C432300077958 /* Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parser.h; sourceTree = SOURCE_ROOT; };
+		7034E3781B9C45EF00077958 /* main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -65,6 +67,7 @@
 				7034E3731B9C432300077958 /* http.h */,
 				7034E3741B9C432300077958 /* Parser.c */,
 				7034E3751B9C432300077958 /* Parser.h */,
+				7034E3781B9C45EF00077958 /* main.c */,
 			);
 			path = "Steam Market Crawler";
 			sourceTree = "<group>";
@@ -127,6 +130,7 @@
 			files = (
 				7034E3771B9C432300077958 /* Parser.c in Sources */,
 				7034E3761B9C432300077958 /* http.c in Sources */,
+				7034E3791B9C45EF00077958 /* main.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
