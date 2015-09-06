@@ -7,7 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		7005EF9B1B9C42B700C33A90 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 7005EF9A1B9C42B700C33A90 /* main.c */; };
+		7034E3761B9C432300077958 /* http.c in Sources */ = {isa = PBXBuildFile; fileRef = 7034E3721B9C432300077958 /* http.c */; };
+		7034E3771B9C432300077958 /* Parser.c in Sources */ = {isa = PBXBuildFile; fileRef = 7034E3741B9C432300077958 /* Parser.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,7 +25,10 @@
 
 /* Begin PBXFileReference section */
 		7005EF971B9C42B700C33A90 /* Steam Market Crawler */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "Steam Market Crawler"; sourceTree = BUILT_PRODUCTS_DIR; };
-		7005EF9A1B9C42B700C33A90 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		7034E3721B9C432300077958 /* http.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = http.c; sourceTree = SOURCE_ROOT; };
+		7034E3731B9C432300077958 /* http.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = http.h; sourceTree = SOURCE_ROOT; };
+		7034E3741B9C432300077958 /* Parser.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = Parser.c; sourceTree = SOURCE_ROOT; };
+		7034E3751B9C432300077958 /* Parser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Parser.h; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +61,10 @@
 		7005EF991B9C42B700C33A90 /* Steam Market Crawler */ = {
 			isa = PBXGroup;
 			children = (
-				7005EF9A1B9C42B700C33A90 /* main.c */,
+				7034E3721B9C432300077958 /* http.c */,
+				7034E3731B9C432300077958 /* http.h */,
+				7034E3741B9C432300077958 /* Parser.c */,
+				7034E3751B9C432300077958 /* Parser.h */,
 			);
 			path = "Steam Market Crawler";
 			sourceTree = "<group>";
@@ -118,7 +125,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7005EF9B1B9C42B700C33A90 /* main.c in Sources */,
+				7034E3771B9C432300077958 /* Parser.c in Sources */,
+				7034E3761B9C432300077958 /* http.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -235,6 +243,7 @@
 				7005EFA01B9C42B700C33A90 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
