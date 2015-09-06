@@ -6,7 +6,7 @@
 //
 //
 
-#define HOST ("http://www.google.com")
+#define MAKE_MONEY_PERCENT 0.85
 
 #include "Parser.h"
 #include <time.h>
@@ -32,7 +32,7 @@ int CanMakeMoney(char * link)
     }
     lowest = atof(buffer);
     median = atof(&(buffer[strlen(buffer)+1]));
-    if ((lowest / median) < 0.85)
+    if ((lowest / median) < MAKE_MONEY_PERCENT)
         return 1;
     return 0;
 }
