@@ -6,9 +6,17 @@
 //
 //
 
-#define BUFFER 400000
+#define BUFFER 100000
 
 #include "http.h"
+
+int CheckForEnd(char * last)
+{
+    for (short i = 0; i != -127; i--)
+        if (last[i] == '}')
+            return 1;
+    return 0;
+}
 
 void expand(char *  dst, char * src, long int n)
 {
@@ -47,7 +55,8 @@ char * GetRequest(char* link)
     int received;
     long int bytes;
     char sendBuffer[BUFFER];
-    char * recvBuffer = calloc(BUFFER, sizeof(char));
+    char recvBuffer[BUFFER];
+    char * result = calloc(400000, sizeof(char));
     struct sockaddr_in serv_addr;
     struct hostent * he;
     
@@ -92,7 +101,7 @@ char * GetRequest(char* link)
             perror("ERROR writing message to socket");
         if (bytes == 0)
             break;
-        sent+=bytes;
+        sent += bytes;
     }
     while (sent < total);
     
@@ -100,18 +109,18 @@ char * GetRequest(char* link)
     received = 0;
     do
     {
-        bytes = read(sockfd,recvBuffer+received,total-received);
+        memset(recvBuffer, 0, sizeof(recvBuffer));
+        bytes = read(sockfd,recvBuffer, total);
         if (bytes < 0)
-            perror("ERROR reading response from socket");
+               perror("ERROR reading response from socket");
+        memcpy(result+received, recvBuffer, bytes);
         received += bytes;
-        if (recvBuffer[received-1] == '}')
+        if (strchr(recvBuffer, '}') != NULL)
             break;
-        
-        printf("%s",recvBuffer-10);
     }
-    while (received < total);
+    while (1);
     
     close(sockfd);
     
-    return recvBuffer;
+    return result;
 }
