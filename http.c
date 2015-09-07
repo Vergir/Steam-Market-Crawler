@@ -6,30 +6,13 @@
 //
 //
 
-#define BUFFER 100000
+#define BUFFER 32769
+#define CHARS_ON_PAGE 400000
+#define HTTP_OK 200
 
 #include "http.h"
 
-int CheckForEnd(char * last)
-{
-    for (short i = 0; i != -127; i--)
-        if (last[i] == '}')
-            return 1;
-    return 0;
-}
-
-void expand(char *  dst, char * src, long int n)
-{
-    int i = 0;
-    while (src[i] != '\0')
-    {
-        dst[n+i] = src[i];
-        i += 1;
-    }
-    dst[n+i] = '\0';
-}
-
-char* gethost(char ** link)
+char * GetHost(char ** link)
 {
     char host[strlen(*link)];
     int offset = 7;
@@ -46,81 +29,87 @@ char* gethost(char ** link)
     return result;
 }
 
-char * GetRequest(char* link)
+void SetUpServerAddress(struct sockaddr_in * serverAddress)
 {
-    char* host = gethost(&link);
-    int sockfd = 0;
-    size_t total;
-    int sent;
-    int received;
-    long int bytes;
-    char sendBuffer[BUFFER];
-    char recvBuffer[BUFFER];
-    char * result = calloc(400000, sizeof(char));
+    memset(serverAddress, 0, sizeof(*serverAddress));
+    serverAddress->sin_family = AF_INET;
+    serverAddress->sin_port = htons(80);
+}
+int SetUpSocket(char * link)
+{
+    int socketfd = 0;
+    char * host = GetHost(&link);
     struct sockaddr_in serv_addr;
     struct hostent * he;
     
-    memset(&serv_addr, '0', sizeof(serv_addr));
-    memset(&serv_addr, 0, sizeof(serv_addr));
+    if ((socketfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
+        perror("\nError : Could not create socket\n");
     
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP))< 0)
-    {
-        printf("\n Error : Could not create socket \n");
-        exit(1);
-    }
+    if ((he = gethostbyname(host)) == NULL)
+        perror("\nError: Could not get Host\n");
     
-    he = gethostbyname(host);
-    if (he == NULL)
-    {
-        perror("\n Error: Getting Host Failed\n");
-        exit(1);
-    }
-    
-    serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(80);
+    SetUpServerAddress(&serv_addr);
     memcpy(&serv_addr.sin_addr.s_addr, he->h_addr, he->h_length);
     
-    int connectionStatus;
-    if ((connectionStatus = connect(sockfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < 0)
-    {
-        perror("\n Error: Connect Failed\n");
-        exit(1);
-    }
+    if ((connect(socketfd, (struct sockaddr *)&serv_addr, sizeof(serv_addr))) < 0)
+        perror("\nError: Could not connect socket\n");
+    
+    return socketfd;
+    
+}
+int GetStatusFromResponse(int socketfd)
+{
+    char buffer[13];
+    buffer[12] = '\0';
+    
+    if (read(socketfd, buffer, 12) > 0)
+        return atoi(&(buffer[9]));
+    else
+        return -1;
+}
 
-    snprintf(sendBuffer, BUFFER,
-             "GET %s HTTP/1.1\r\n"
-             "Host: %s\r\n\r\n"
-             ,link, host);
+char * GetRequest(char * link)
+{
+    int socket = 0;
+    long int bytes;
+    size_t packetSize, received = 0;
+    char sendBuffer[BUFFER];
+    char recvBuffer[BUFFER];
+    char * result = calloc(CHARS_ON_PAGE, sizeof(char));
     
-    total = strlen(sendBuffer);
-    sent = 0;
+    socket = SetUpSocket(link);
+    char * host = GetHost(&link);
+
+    snprintf(sendBuffer, BUFFER, "GET %s HTTP/1.1\r\nHost: %s\r\n\r\n" ,link, host);
+    
+    packetSize = strlen(sendBuffer);
+    for (long sent = 0, packetSize = strlen(sendBuffer); sent < packetSize; sent += bytes)
+        bytes = write(socket, sendBuffer + sent,packetSize - sent);
+    
+    packetSize = BUFFER - 1;
+    
+    if ((packetSize = GetStatusFromResponse(socket)) != HTTP_OK)
+        {
+            if (packetSize == -1)
+                perror("\nCould not read a response from server\n");
+            else
+                printf("\nSomething is wrong...Status code: %d\n", packetSize);
+            return GetRequest(strcat(host, link));
+        }
+    
     do
     {
-        bytes = write(sockfd,sendBuffer+sent,total-sent);
+        memset(recvBuffer, 0, packetSize);
+        bytes = recv(socket,recvBuffer, packetSize, 0);
         if (bytes < 0)
-            perror("ERROR writing message to socket");
-        if (bytes == 0)
-            break;
-        sent += bytes;
-    }
-    while (sent < total);
-    
-    total = BUFFER-1;
-    received = 0;
-    do
-    {
-        memset(recvBuffer, 0, sizeof(recvBuffer));
-        bytes = read(sockfd,recvBuffer, total);
-        if (bytes < 0)
-               perror("ERROR reading response from socket");
+            perror("ERROR reading response from socket");
         memcpy(result+received, recvBuffer, bytes);
         received += bytes;
-        if (strchr(recvBuffer, '}') != NULL)
-            break;
     }
-    while (1);
+    while(strchr(recvBuffer, '}') != NULL);
+        
     
-    close(sockfd);
+    close(socket);
     
     return result;
 }

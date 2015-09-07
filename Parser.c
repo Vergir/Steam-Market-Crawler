@@ -8,10 +8,23 @@
 
 #define MAKE_MONEY_PERCENT 0.85
 #define ITEMS_PER_PAGE 100
+#define MAGIC_STRING (";\\\">")
 
 #include "Parser.h"
 
-
+char * SkipMagicString(char * string, int amount, int offset)
+{
+    char * tmp;
+    while (amount-- > 0)
+    {
+        tmp = strstr(string, MAGIC_STRING);
+        if (tmp != NULL)
+            string = tmp + offset;
+        else
+            return NULL;
+    }
+    return string;
+}
 
 int ParsePrices(char * link, double profitPercent)
 {
@@ -43,13 +56,13 @@ char * ParseItemNames(char * link, char delimiter)
 {
     short head;
     char * items = calloc(ITEMS_PER_PAGE*100, sizeof(char));
-    char * string = strstr(strstr(strstr(GetRequest(link), ";\\\">") + 1, ";\\\">") + 1, ";\\\">") + 1;
+    char * string = SkipMagicString(GetRequest(link), 3, 1);
     int offset = 0;
 
     for (short int i = 0; i != ITEMS_PER_PAGE; i += 1)
     {
         head = 0;
-        string = strstr(string, ";\\\">") + 4;
+        string = SkipMagicString(string, 1, 4);
         while (string[++head] != '<');
         memcpy(items+offset, string, head);
         items[offset+head++] = delimiter;
@@ -71,7 +84,7 @@ char * ParseItemMarket(enum Games game, char delimiter)
     while (*(++string) >= '0')
         numOfItems = numOfItems * 10 + *string - '0';
     numOfItems -= ITEMS_PER_PAGE;
-    printf("%d items/n/n",numOfItems);
+    printf("%d items\n\n",numOfItems);
     int offset = 0;
     char * result = calloc(numOfItems*100, sizeof(char));
     for (int pageNumber = 1; pageNumber < numOfItems; pageNumber += ITEMS_PER_PAGE)
@@ -80,8 +93,8 @@ char * ParseItemMarket(enum Games game, char delimiter)
         start = clock();
         string = ParseItemNames(string, delimiter);
         end = clock();
-        sleep(1000-((double)(end - start) / CLOCKS_PER_SEC)*1000);
-        printf("Items got: %d-%d/n", pageNumber, pageNumber + 100);
+        /*sleep(1);*/
+        printf("Items got: %d-%d\n", pageNumber, pageNumber + 100);
         memcpy(result+offset, string, strlen(string));
         offset += strlen(string);
     }
