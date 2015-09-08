@@ -9,6 +9,8 @@
 #define BUFFER 32769
 #define CHARS_ON_PAGE 400000
 #define HTTP_OK 200
+#define HTTP_TMR 429
+#define TMR_COOLDOWN 300
 
 #include "http.h"
 
@@ -62,7 +64,8 @@ int GetStatusFromResponse(int socketfd)
     char buffer[13];
     buffer[12] = '\0';
     
-    if (read(socketfd, buffer, 12) > 0)
+    size_t wow;
+    if ((wow = read(socketfd, buffer, 12)) > 0)
         return atoi(&(buffer[9]));
     else
         return -1;
@@ -86,27 +89,29 @@ char * GetRequest(char * link)
     for (long sent = 0, packetSize = strlen(sendBuffer); sent < packetSize; sent += bytes)
         bytes = write(socket, sendBuffer + sent,packetSize - sent);
     
-    packetSize = BUFFER - 1;
-    
     if ((packetSize = GetStatusFromResponse(socket)) != HTTP_OK)
-        {
-            if (packetSize == -1)
-                perror("\nCould not read a response from server\n");
-            else
-                printf("\nSomething is wrong...Status code: %d\n", packetSize);
-            return GetRequest(strcat(host, link));
-        }
+    {
+        if (packetSize == -1)
+            perror("\nCould not read a response from server\n");
+        else
+            printf("\nSomething is wrong...Status code: %d\n", packetSize);
+        if (packetSize == HTTP_TMR)
+            sleep(TMR_COOLDOWN);
+        return NULL;
+    }
+    
+    packetSize = BUFFER - 1;
     
     do
     {
         memset(recvBuffer, 0, packetSize);
-        bytes = recv(socket,recvBuffer, packetSize, 0);
+        bytes = read(socket,recvBuffer, packetSize);
         if (bytes < 0)
             perror("ERROR reading response from socket");
         memcpy(result+received, recvBuffer, bytes);
         received += bytes;
     }
-    while(strchr(recvBuffer, '}') != NULL);
+    while(strchr(recvBuffer, '}') == NULL);
         
     
     close(socket);

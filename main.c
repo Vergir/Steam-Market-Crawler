@@ -15,8 +15,6 @@ int main()
     
     start = clock();
     char * response = ParseItemMarket(csgo, '\n');
-    for (short i = 0; i != strlen(response); i += 1)
-        printf("%s", response);
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     printf("%f s", cpu_time_used);
