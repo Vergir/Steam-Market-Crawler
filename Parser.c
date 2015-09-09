@@ -10,8 +10,7 @@
 #define ITEMS_PER_PAGE 100
 #define MAGIC_STRING ";\\\">"
 #define SOMEWEHERE_BEFORE_PRICE 850
-#define DELAY_BETWEEN_REQUESTS 1
-#define PRINT_NOW fflush(stdout);
+#define DELAY_BETWEEN_REQUESTS 10
 
 #include "Parser.h"
 
@@ -63,11 +62,11 @@ int ParsePrices(char * link, double profitPercent)
     return 0;
 }
 
-int FindEndOfName(char * string)
+int FindEndOfName(char ** string)
 {
     int result = 0;
-    while (string[++result] != '<')
-        if (isascii(string[result] == 0))
+    while ((*string)[++result] != '<')
+        if (isascii((*string)[result] == 0))
             return -1;
     return result;
 }
@@ -82,7 +81,7 @@ char * ParseItemNames(char * link, char delimiter)
     for (short int i = 0; i != ITEMS_PER_PAGE; i += 1)
     {
         string = SkipMagicString(string, 1, 4);
-        if ((endOfName = FindEndOfName(string)) < 0)
+        if ((endOfName = FindEndOfName(&string)) < 0)
             continue;
         memcpy(items+offset, string, endOfName);
         items[offset+endOfName++] = delimiter;
@@ -111,7 +110,7 @@ char * ParseMarketItemNames(enum Games game, char delimiter)
     {
         sprintf(string, "http://steamcommunity.com/market/search/render/?query=appid:%d&start=%d&count=100&currency=0&l=english&cc=pt", game, pageNumber);
         string = ParseItemNames(string, delimiter);
-        printf("%d-%d...", pageNumber, pageNumber+99);PRINT_NOW
+        printf("%d-%d...", pageNumber, pageNumber+99);
         memcpy(result+offset, string, strlen(string));
         offset += strlen(string);
         sleep(DELAY_BETWEEN_REQUESTS);

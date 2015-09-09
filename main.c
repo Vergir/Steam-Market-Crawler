@@ -10,6 +10,8 @@
 
 int main()
 {
+    setbuf(stdout, NULL);
+    
     ParseMarketItemNames(csgo, '\n');
     return 1;
 }
