@@ -18,11 +18,13 @@
 #include <errno.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
+#include <ctype.h>
 
 
 #ifndef ____http__
 #define ____http__
 
-char * GetRequest(char *);
+char * RequestGet(char * link);
+char * TryRequestGet(char * link);
 
 #endif /* defined(____http__) */

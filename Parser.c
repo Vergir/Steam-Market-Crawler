@@ -9,14 +9,18 @@
 #define MAKE_MONEY_PERCENT 0.85
 #define ITEMS_PER_PAGE 100
 #define MAGIC_STRING ";\\\">"
+#define SOMEWEHERE_BEFORE_PRICE 850
+#define DELAY_BETWEEN_REQUESTS 1
+#define PRINT_NOW fflush(stdout);
 
 #include "Parser.h"
 
-char * SafeGetRequest(char * link)
+void SaveToFile(void * string, char * filename)
 {
-    char * result;
-    while ((result = GetRequest(link)) == NULL);
-    return result;
+    
+    FILE * file = fopen(filename, "w");
+    fputs(string, file);
+    fclose(file);
 }
 
 char * SkipMagicString(char * string, int amount, int offset)
@@ -35,8 +39,8 @@ char * SkipMagicString(char * string, int amount, int offset)
 
 int ParsePrices(char * link, double profitPercent)
 {
-    const char * string = SafeGetRequest(link);
-    int startindex = 850;
+    const char * string = TryRequestGet(link);
+    int startindex = SOMEWEHERE_BEFORE_PRICE;
     int endindex;
     int head = 0;
     double lowest;
@@ -59,53 +63,63 @@ int ParsePrices(char * link, double profitPercent)
     return 0;
 }
 
+int FindEndOfName(char * string)
+{
+    int result = 0;
+    while (string[++result] != '<')
+        if (isascii(string[result] == 0))
+            return -1;
+    return result;
+}
+
 char * ParseItemNames(char * link, char delimiter)
 {
-    short head;
+    short endOfName;
     char * items = calloc(ITEMS_PER_PAGE*100, sizeof(char));
-    char * string = SkipMagicString(SafeGetRequest(link), 3, 1);
+    char * string = SkipMagicString(TryRequestGet(link), 3, 1);
     int offset = 0;
 
     for (short int i = 0; i != ITEMS_PER_PAGE; i += 1)
     {
-        head = 0;
         string = SkipMagicString(string, 1, 4);
-        while (string[++head] != '<');
-        memcpy(items+offset, string, head);
-        items[offset+head++] = delimiter;
-        offset += head;
+        if ((endOfName = FindEndOfName(string)) < 0)
+            continue;
+        memcpy(items+offset, string, endOfName);
+        items[offset+endOfName++] = delimiter;
+        offset += endOfName;
     }
     items[offset] = '\0';
     
     return items;
 }
 
-char * ParseItemMarket(enum Games game, char delimiter)
+char * ParseMarketItemNames(enum Games game, char delimiter)
 {
     char * string = malloc(sizeof(char)*200);
-    sprintf(string, "http://steamcommunity.com/market/search/render/?query=appid:%d&start=1&count=1&currency=0&l=english&cc=pt", game);
-    string = strstr(SafeGetRequest(string), "nt\":")+3;
     unsigned int numOfItems = 0;
+    int offset = 0;
+    
+    sprintf(string, "http://steamcommunity.com/market/search/render/?query=appid:%d&start=1&count=1&currency=0&l=english&cc=pt", game);
+    string = strstr(TryRequestGet(string), "nt\":")+3;
     while (*(++string) >= '0')
         numOfItems = numOfItems * 10 + *string - '0';
-    printf("%d items\n\n",numOfItems);
     numOfItems -= ITEMS_PER_PAGE;
-    int offset = 0;
+    printf("%d to Parse\n", numOfItems);
+    printf("Parsed: ");
     char * result = calloc(numOfItems*100, sizeof(char));
     for (int pageNumber = 1; pageNumber < numOfItems; pageNumber += ITEMS_PER_PAGE)
     {
         sprintf(string, "http://steamcommunity.com/market/search/render/?query=appid:%d&start=%d&count=100&currency=0&l=english&cc=pt", game, pageNumber);
         string = ParseItemNames(string, delimiter);
-        printf("Items got: %d-%d\n", pageNumber, pageNumber + 100);
+        printf("%d-%d...", pageNumber, pageNumber+99);PRINT_NOW
         memcpy(result+offset, string, strlen(string));
         offset += strlen(string);
+        sleep(DELAY_BETWEEN_REQUESTS);
     }
     result[offset] = '\0';
     
-    sprintf(string, "ItemList: AppID=%d; Count=%d", game, numOfItems);
-    FILE * file = fopen(string, "w");
-    fputs(result, file);
-    fclose(file);
+    sprintf(string, "ItemNames_%d.txt", game);
+    SaveToFile(result, string);
     
     return result;
 }

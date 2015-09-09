@@ -14,6 +14,7 @@
 
 #include "http.h"
 
+
 char * GetHost(char ** link)
 {
     char host[strlen(*link)];
@@ -37,6 +38,7 @@ void SetUpServerAddress(struct sockaddr_in * serverAddress)
     serverAddress->sin_family = AF_INET;
     serverAddress->sin_port = htons(80);
 }
+
 int SetUpSocket(char * link)
 {
     int socketfd = 0;
@@ -59,6 +61,7 @@ int SetUpSocket(char * link)
     return socketfd;
     
 }
+
 int GetStatusFromResponse(int socketfd)
 {
     char buffer[13];
@@ -71,7 +74,7 @@ int GetStatusFromResponse(int socketfd)
         return -1;
 }
 
-char * GetRequest(char * link)
+char * RequestGet(char * link)
 {
     int socket = 0;
     long int bytes;
@@ -96,7 +99,10 @@ char * GetRequest(char * link)
         else
             printf("\nSomething is wrong...Status code: %d\n", packetSize);
         if (packetSize == HTTP_TMR)
+        {
+            printf("Too Many Requests. Pause for 5 mins.\n");
             sleep(TMR_COOLDOWN);
+        }
         return NULL;
     }
     
@@ -116,5 +122,11 @@ char * GetRequest(char * link)
     
     close(socket);
     
+    return result;
+}
+char * TryRequestGet(char * link)
+{
+    char * result;
+    while ((result = RequestGet(link)) == NULL);
     return result;
 }

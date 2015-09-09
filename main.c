@@ -10,14 +10,6 @@
 
 int main()
 {
-    clock_t start, end;
-    double cpu_time_used;
-    
-    start = clock();
-    char * response = ParseItemMarket(csgo, '\n');
-    end = clock();
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
-    printf("%f s", cpu_time_used);
-    
+    ParseMarketItemNames(csgo, '\n');
     return 1;
 }
